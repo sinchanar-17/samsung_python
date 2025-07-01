@@ -1,9 +1,0 @@
-25\6\25
-* how floating point numbers are stored in memory?(alg)
-* Find out why there are no ++ and -- operators in python?
-* check if a year is leap
-* check if a +ve integer is perfect square
-* find smallest of 3 distinct numbers
-* farmer problem
-* taxation problem
-
