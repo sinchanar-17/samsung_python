@@ -30,7 +30,7 @@ def create_db():
         print('Database creation failed')
 
 def create_table():
-    query = 'create table IF NOT EXISTS employees(id int primary key auto_increment, name varcahr(50) not null, designation varchar(30), phone_number	bigint unique, salary float, commission		float default(0), years_of_experience tinyint, technology		varchar(30)	not null)'
+    query = 'create table IF NOT EXISTS employee(id int primary key auto_increment, name varchar(50) not null, designation varchar(30), phone_number	bigint unique, salary float, commission		float default(0), years_of_experience tinyint, technology		varchar(30)	not null)'
     connection = connect_db()
     try:
         cursor = connection.cursor()
@@ -47,7 +47,7 @@ def read_all_employees():
     try:
         cursor = connection.cursor()
         cursor.execute(query)
-        rows = cursor.fetchAll()
+        rows = cursor.fetchall()
         for row in rows:
             print(row)
         print('All rows retrived')
