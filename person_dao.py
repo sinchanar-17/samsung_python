@@ -17,7 +17,7 @@ class Db_operations:
 
     def connect_db(self):
         try:
-            connection = pymysql.Connect(host='localhost', port=3306, user='root', password='root', database='db1', charset='utf8')
+            connection = pymysql.Connect(host='localhost', port=3306, user='root', password='root', database='db2', charset='utf8')
             print('DB connected')
             return connection
         except:
