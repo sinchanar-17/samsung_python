@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maternal Health & Delivery Analysis Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* Dark background for the body (near black) */
+            color: #ffffff; /* Default text color to white */
+        }
+        .card {
+            background-color: #f8f8f8; /* Off-white for cards */
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            padding: 1.5rem; /* p-6 */
+            margin-bottom: 1.5rem; /* mb-6 */
+            color: #1f2937; /* Dark text inside cards for contrast */
+        }
+        .card-title {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600; /* font-semibold */
+            margin-bottom: 1rem; /* mb-4 */
+            color: #1f2937; /* Dark title inside cards */
+        }
+        .analysis-output pre {
+            background-color: #e5e7eb; /* bg-gray-200 for preformatted text background */
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 1rem; /* p-4 */
+            overflow-x: auto; /* For long lines */
+            white-space: pre-wrap; /* Wrap long lines */
+            word-wrap: break-word; /* Break words */
+            font-size: 0.875rem; /* text-sm */
+            color: #1f2937; /* Dark text inside pre for readability */
+            text-align: left !important; /* Force left alignment for answers */
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl sm:text-5xl font-bold text-white mb-4">Maternal Health & Delivery Analysis</h1>
+            <p class="text-lg text-gray-300">Insights into Delivery Types, Maternal Factors, and Regional Disparities</p>
+        </header>
+
+        <!-- Navigation Menu -->
+        <nav class="bg-gray-800 p-4 rounded-lg shadow-lg mb-10">
+            <ul class="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-6">
+                <li><a href="#visualizations" class="text-white hover:text-blue-400 font-medium text-lg transition duration-300 ease-in-out">Visualizations</a></li>
+                <li><a href="#analysis-questions" class="text-white hover:text-blue-400 font-medium text-lg transition duration-300 ease-in-out">Analysis Results</a></li>
+                <li><button id="refreshDataBtn" class="text-white hover:text-green-400 font-medium text-lg transition duration-300 ease-in-out">Refresh Data & Plots</button></li>
+            </ul>
+        </nav>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-lg shadow-xl flex items-center space-x-3">
+                <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="text-gray-800 text-lg">Loading data and generating plots...</span>
+            </div>
+        </div>
+
+        <section id="visualizations" class="mb-10 pt-4">
+            <h2 class="text-3xl font-semibold text-white mb-6 border-b-2 border-blue-500 pb-2">Visualizations</h2>
+            <div id="visualizationContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Visualizations will be loaded here by JavaScript -->
+                <div class="card"><h3 class="card-title">1. Delivery Type Distribution (Count)</h3><img id="delivery_type_countplot" src="" alt="Count of Delivery Types" class="w-full h-auto rounded-lg shadow-sm"></div>
+                <div class="card"><h3 class="card-title">1. Delivery Type Distribution (Percentage)</h3><img id="delivery_type_piechart" src="" alt="Delivery Type Distribution Pie Chart" class="w-full h-auto rounded-lg shadow-sm"></div>
+                <div class="card"><h3 class="card-title">2. Delivery Type by Hospital Type</h3><img id="institutional_comparison" src="" alt="Delivery Type by Hospital Type" class="w-full h-auto rounded-lg shadow-sm"></div>
+                <div class="card"><h3 class="card-title">3. Delivery Type by Region</h3><img id="regional_disparity" src="" alt="Delivery Type by Region" class="w-full h-auto rounded-lg shadow-sm"></div>
+                <div class="card"><h3 class="card-title">4. Delivery Type by Season</h3><img id="seasonal_effect" src="" alt="Delivery Type by Season" class="w-full h-auto rounded-lg shadow-sm"></div>
+                <div class="card"><h3 class="card-title">5. Maternal Age Group vs Delivery Type</h3><img id="maternal_age_vs_delivery_type" src="" alt="Delivery Type by Mother's Age Group" class="w-full h-auto rounded-lg shadow-sm"></div>
+                <div class="card"><h3 class="card-title">6. NICU Admission by Delivery Type</h3><img id="nicu_admission_rate" src="" alt="NICU Admission by Delivery Type" class="w-full h-auto rounded-lg shadow-sm"></div>
+                <div class="card"><h3 class="card-title">7. Medical Complication Impact</h3><img id="medical_complication_impact" src="" alt="Delivery Type by Medical Complication" class="w-full h-auto rounded-lg shadow-sm"></div>
+                <div class="card"><h3 class="card-title">8. BMI vs Delivery Type</h3><img id="bmi_vs_delivery_type" src="" alt="Delivery Type by Mother's BMI Category" class="w-full h-auto rounded-lg shadow-sm"></div>
+                <div class="card"><h3 class="card-title">9. Child Weight by Delivery Type</h3><img id="child_weight_vs_delivery_type" src="" alt="Child Weight by Delivery Type" class="w-full h-auto rounded-lg shadow-sm"></div>
+            </div>
+        </section>
+
+        <section id="analysis-questions" class="mb-10 pt-4">
+            <h2 class="text-3xl font-semibold text-white mb-6 border-b-2 border-blue-500 pb-2">Key Questions & Analysis</h2>
+            <div id="analysisContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Analysis results will be loaded here by JavaScript -->
+                <div class="card analysis-output">
+                    <h3 class="card-title">Q1) Which part of the country has more C-section deliveries?</h3>
+                    <img id="q1_plot" src="" alt="C-section Deliveries by Region" class="w-full h-auto rounded-lg shadow-sm mb-4">
+                    <p class="font-medium text-gray-700 mb-2">Answer:</p>
+                    <pre id="q1_text"></pre>
+                </div>
+                <div class="card analysis-output">
+                    <h3 class="card-title">Q2) Which hospitals have more C-section deliveries?</h3>
+                    <img id="q2_plot" src="" alt="Top Hospitals by C-section Deliveries" class="w-full h-auto rounded-lg shadow-sm mb-4">
+                    <p class="font-medium text-gray-700 mb-2">Answer:</p>
+                    <pre id="q2_text"></pre>
+                </div>
+                <div class="card analysis-output">
+                    <h3 class="card-title">Q3) Does C-section delivery have any relation with Season?</h3>
+                    <img id="q3_plot" src="" alt="Delivery Type by Season (%)" class="w-full h-auto rounded-lg shadow-sm mb-4">
+                    <p class="font-medium text-gray-700 mb-2">Answer:</p>
+                    <pre id="q3_text"></pre>
+                </div>
+                <div class="card analysis-output">
+                    <h3 class="card-title">Q4) What percentage of 2nd child births were normal when 1st was C-section?</h3>
+                    <img id="q4_plot" src="" alt="Pie Chart of 2nd Child Delivery Type (After 1st C-section)" class="w-full h-auto rounded-lg shadow-sm mb-4">
+                    <p class="font-medium text-gray-700 mb-2">Answer:</p>
+                    <pre id="q4_text"></pre>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center text-gray-400 text-sm mt-10 p-4 border-t border-gray-700">
+            <p>&copy; 2025 Maternal Health Dashboard. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const refreshButton = document.getElementById('refreshDataBtn');
+
+            async function fetchDashboardData() {
+                loadingIndicator.classList.remove('hidden'); // Show loading indicator
+                try {
+                    // Fetch data from your Flask backend
+                    // Make sure the URL matches where your Flask app is running
+                    const response = await fetch('http://127.0.0.1:5000/get_dashboard_data');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    console.log("Data fetched:", data);
+
+                    // Populate visualizations
+                    // Loop through each visualization ID and set its image source
+                    for (const [key, base64Image] of Object.entries(data.visualizations)) {
+                        const imgElement = document.getElementById(key);
+                        if (imgElement) {
+                            imgElement.src = `data:image/png;base64,${base64Image}`;
+                        } else {
+                            console.warn(`Image element with ID '${key}' not found.`);
+                        }
+                    }
+
+                    // Populate analysis questions
+                    // Loop through each analysis question ID and set its plot image and text content
+                    for (const [key, analysisData] of Object.entries(data.analysis_questions)) {
+                        const plotElement = document.getElementById(`${key}_plot`);
+                        const textElement = document.getElementById(`${key}_text`);
+                        if (plotElement) {
+                            plotElement.src = `data:image/png;base64,${analysisData.plot}`;
+                        } else {
+                            console.warn(`Plot element with ID '${key}_plot' not found.`);
+                        }
+                        if (textElement) {
+                            textElement.textContent = analysisData.text;
+                        } else {
+                            console.warn(`Text element with ID '${key}_text' not found.`);
+                        }
+                    }
+
+                } catch (error) {
+                    console.error("Error fetching dashboard data:", error);
+                    alert("Failed to load dashboard data. Please ensure the Python Flask server is running at http://127.0.0.1:5000/.");
+                } finally {
+                    loadingIndicator.classList.add('hidden'); // Hide loading indicator
+                }
+            }
+
+            // Initial data fetch when the page loads
+            fetchDashboardData();
+
+            // Event listener for the refresh button
+            refreshButton.addEventListener('click', fetchDashboardData);
+        });
+    </script>
+</body>
+</html>
