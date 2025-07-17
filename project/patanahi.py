@@ -315,221 +315,7 @@ def analyze_second_child_normal_after_csection(df_local):
 
     return f"Percentage of 2nd child births that were normal after 1st C-section: {percentage:.2f}%"
 
-# --- CRUD Operations ---
-
-def save_current_dataframe(df_to_save):
-    """Saves the current DataFrame back to the original CSV file."""
-    try:
-        df_to_save.to_csv(DATASET_PATH, index=False)
-        print(f"\nDataFrame successfully saved to {DATASET_PATH}")
-    except Exception as e:
-        print(f"\nError saving DataFrame: {e}")
-
-def add_record():
-    """Adds a new record to the DataFrame."""
-    global df
-    if df is None:
-        print("Error: DataFrame not loaded. Please load data first.")
-        return
-
-    print("\n--- Add New Record ---")
-    new_record = {}
-    # Dynamically get column names and prompt for values
-    for col in df.columns:
-        value = input(f"Enter value for '{col}': ")
-        # Basic type conversion attempt (can be expanded)
-        if col in ['Mother_Age', 'Mother_BMI', 'Child_Weight_kg', 'Child_Birth_Order']:
-            try:
-                new_record[col] = float(value) if '.' in value else int(value)
-            except ValueError:
-                new_record[col] = None # Or handle more robustly
-                print(f"Warning: Invalid number for {col}, set to None.")
-        elif col in ['Date_of_Delivery']:
-            try:
-                new_record[col] = pd.to_datetime(value)
-            except ValueError:
-                new_record[col] = pd.NaT
-                print(f"Warning: Invalid date for {col}, set to NaT.")
-        else:
-            new_record[col] = value
-    
-    # Create a new DataFrame from the new record and concatenate
-    new_row_df = pd.DataFrame([new_record])
-    
-    # Re-run preprocessing steps on the new row to ensure consistency
-    # This is important for 'Year', 'Month', 'Season', 'Age_Group', 'BMI_Category'
-    if 'Date_of_Delivery' in new_row_df.columns:
-        new_row_df['Date_of_Delivery'] = pd.to_datetime(new_row_df['Date_of_Delivery'])
-        new_row_df['Year'] = new_row_df['Date_of_Delivery'].dt.year
-        new_row_df['Month'] = new_row_df['Date_of_Delivery'].dt.month
-        new_row_df['Season'] = new_row_df['Month'].map({
-            12: 'Winter', 1: 'Winter', 2: 'Winter',
-            3: 'Spring', 4: 'Spring', 5: 'Spring',
-            6: 'Monsoon', 7: 'Monsoon', 8: 'Monsoon',
-            9: 'Autumn', 10: 'Autumn', 11: 'Autumn'
-        })
-    if 'Mother_Age' in new_row_df.columns:
-        new_row_df['Age_Group'] = pd.cut(new_row_df['Mother_Age'], bins=[0, 20, 30, 40, 100],
-                                         labels=['<20', '20-30', '30-40', '40+'])
-    if 'Mother_BMI' in new_row_df.columns:
-        new_row_df['BMI_Category'] = pd.cut(new_row_df['Mother_BMI'], bins=[0, 18.5, 25, 30, 100],
-                                            labels=['Underweight', 'Normal', 'Overweight', 'Obese'])
-
-    df = pd.concat([df, new_row_df], ignore_index=True)
-    print("Record added successfully. Remember to save changes!")
-    print(df.tail(1)) # Show the last added record
-
-def view_records():
-    """Allows viewing a subset of records or filtering."""
-    global df
-    if df is None:
-        print("Error: DataFrame not loaded. Please load data first.")
-        return
-
-    print("\n--- View Records ---")
-    print("1. View first N rows")
-    print("2. View last N rows")
-    print("3. View specific row by index")
-    print("4. Filter by column value")
-    choice = input("Enter your choice (1-4): ")
-
-    if choice == '1':
-        try:
-            n = int(input("Enter number of rows (N) to view from start: "))
-            print(df.head(n))
-        except ValueError:
-            print("Invalid input. Please enter a number.")
-    elif choice == '2':
-        try:
-            n = int(input("Enter number of rows (N) to view from end: "))
-            print(df.tail(n))
-        except ValueError:
-            print("Invalid input. Please enter a number.")
-    elif choice == '3':
-        try:
-            idx = int(input("Enter row index to view: "))
-            if idx in df.index:
-                print(df.loc[idx])
-            else:
-                print(f"Index {idx} not found.")
-        except ValueError:
-            print("Invalid input. Please enter a number.")
-    elif choice == '4':
-        column_name = input("Enter column name to filter by: ")
-        if column_name in df.columns:
-            filter_value = input(f"Enter value to filter by in '{column_name}': ")
-            # Attempt to convert filter_value to the column's dtype
-            try:
-                # Infer type from first non-null element for basic conversion
-                if not df[column_name].empty and pd.api.types.is_numeric_dtype(df[column_name]):
-                    filter_value = float(filter_value) if '.' in filter_value else int(filter_value)
-                elif not df[column_name].empty and pd.api.types.is_datetime64_any_dtype(df[column_name]):
-                    filter_value = pd.to_datetime(filter_value)
-            except ValueError:
-                pass # Keep as string if conversion fails
-
-            filtered_df = df[df[column_name] == filter_value]
-            if not filtered_df.empty:
-                print(f"Filtered results for '{column_name}' == '{filter_value}':")
-                print(filtered_df)
-            else:
-                print("No matching records found.")
-        else:
-            print(f"Column '{column_name}' not found.")
-    else:
-        print("Invalid choice.")
-
-def update_record():
-    """Updates an existing record in the DataFrame."""
-    global df
-    if df is None:
-        print("Error: DataFrame not loaded. Please load data first.")
-        return
-
-    print("\n--- Update Record ---")
-    try:
-        idx = int(input("Enter the index of the record to update: "))
-        if idx not in df.index:
-            print(f"Error: Index {idx} not found.")
-            return
-
-        print(f"Current record at index {idx}:\n{df.loc[idx]}")
-        column_name = input("Enter the column name to update: ")
-        if column_name not in df.columns:
-            print(f"Error: Column '{column_name}' not found.")
-            return
-
-        new_value = input(f"Enter the new value for '{column_name}': ")
-
-        # Basic type conversion attempt for the new value
-        if column_name in ['Mother_Age', 'Mother_BMI', 'Child_Weight_kg', 'Child_Birth_Order']:
-            try:
-                df.loc[idx, column_name] = float(new_value) if '.' in new_value else int(new_value)
-            except ValueError:
-                print(f"Warning: Invalid number for {column_name}, value not updated.")
-                return
-        elif column_name in ['Date_of_Delivery']:
-            try:
-                df.loc[idx, column_name] = pd.to_datetime(new_value)
-            except ValueError:
-                print(f"Warning: Invalid date for {column_name}, value not updated.")
-                return
-        else:
-            df.loc[idx, column_name] = new_value
-        
-        # Re-run preprocessing steps for the updated row to ensure consistency of derived columns
-        # This is crucial if 'Date_of_Delivery', 'Mother_Age', or 'Mother_BMI' are updated
-        if column_name == 'Date_of_Delivery':
-            df.loc[idx, 'Year'] = df.loc[idx, 'Date_of_Delivery'].year
-            df.loc[idx, 'Month'] = df.loc[idx, 'Date_of_Delivery'].month
-            df.loc[idx, 'Season'] = df.loc[idx, 'Month'].map({
-                12: 'Winter', 1: 'Winter', 2: 'Winter',
-                3: 'Spring', 4: 'Spring', 5: 'Spring',
-                6: 'Monsoon', 7: 'Monsoon', 8: 'Monsoon',
-                9: 'Autumn', 10: 'Autumn', 11: 'Autumn'
-            })
-        elif column_name == 'Mother_Age':
-            df.loc[idx, 'Age_Group'] = pd.cut([df.loc[idx, 'Mother_Age']], bins=[0, 20, 30, 40, 100],
-                                               labels=['<20', '20-30', '30-40', '40+'])[0]
-        elif column_name == 'Mother_BMI':
-            df.loc[idx, 'BMI_Category'] = pd.cut([df.loc[idx, 'Mother_BMI']], bins=[0, 18.5, 25, 30, 100],
-                                                  labels=['Underweight', 'Normal', 'Overweight', 'Obese'])[0]
-
-        print("Record updated successfully. Remember to save changes!")
-        print(f"Updated record at index {idx}:\n{df.loc[idx]}")
-
-    except ValueError:
-        print("Invalid input. Please enter a valid index.")
-    except Exception as e:
-        print(f"An error occurred during update: {e}")
-
-def delete_record():
-    """Deletes a record from the DataFrame."""
-    global df
-    if df is None:
-        print("Error: DataFrame not loaded. Please load data first.")
-        return
-
-    print("\n--- Delete Record ---")
-    try:
-        idx = int(input("Enter the index of the record to delete: "))
-        if idx not in df.index:
-            print(f"Error: Index {idx} not found.")
-            return
-
-        confirm = input(f"Are you sure you want to delete record at index {idx}? (yes/no): ").lower()
-        if confirm == 'yes':
-            df.drop(index=idx, inplace=True)
-            df.reset_index(drop=True, inplace=True) # Reset index to maintain continuity
-            print("Record deleted successfully. Remember to save changes!")
-        else:
-            print("Deletion cancelled.")
-    except ValueError:
-        print("Invalid input. Please enter a valid index.")
-    except Exception as e:
-        print(f"An error occurred during deletion: {e}")
-
-# --- Main Functions for Running Analysis and CRUD ---
+# --- Main Functions for Running Analysis and Visualizations ---
 
 def run_all_visualizations():
     """Runs all visualization functions."""
@@ -643,7 +429,7 @@ def run_specific_analysis():
 
 def main():
     """
-    Main function to run the interactive menu for analysis and CRUD operations.
+    Main function to run the interactive menu for analysis and visualization operations.
     """
     global df # Ensure we are working with the global DataFrame
 
@@ -655,17 +441,11 @@ def main():
         return
 
     while True:
-        print("\n--- Maternal Health & Delivery Analysis Menu ---")
+        print("\n--- Normal Vs C-section Delivery Analysis Menu ---")
         print("1. Run All Visualizations")
         print("2. Run Specific Visualization")
         print("3. Run All Analysis Questions")
         print("4. Run Specific Analysis Question")
-        print("--- Data Management (CRUD) ---")
-        print("5. Add New Record")
-        print("6. View Records")
-        print("7. Update Record")
-        print("8. Delete Record")
-        print("9. Save Changes to CSV")
         print("0. Exit")
 
         choice = input("Enter your choice: ")
@@ -678,21 +458,11 @@ def main():
             run_all_analyses()
         elif choice == '4':
             run_specific_analysis()
-        elif choice == '5':
-            add_record()
-        elif choice == '6':
-            view_records()
-        elif choice == '7':
-            update_record()
-        elif choice == '8':
-            delete_record()
-        elif choice == '9':
-            save_current_dataframe(df)
         elif choice == '0':
             print("Exiting program. Goodbye!")
             break
         else:
-            print("Invalid choice. Please enter a number between 0 and 9.")
+            print("Invalid choice. Please enter a number between 0 and 4, or 0 to exit.")
 
 if __name__ == "__main__":
     main()
