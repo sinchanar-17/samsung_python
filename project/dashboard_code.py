@@ -3,14 +3,19 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 
-# Set global style for plots
-sns.set(style="whitegrid")
+# Get the directory where the current Python script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Define the directory to save plots
-PLOTS_DIR = 'plots'
+# Define the directory to save plots relative to the script's location
+PLOTS_DIR = os.path.join(SCRIPT_DIR, 'plots')
+
+# Create the plots directory if it doesn't exist
 if not os.path.exists(PLOTS_DIR):
     os.makedirs(PLOTS_DIR)
     print(f"Created directory: {PLOTS_DIR}")
+
+# Set global style for plots
+sns.set(style="whitegrid")
 
 def load_and_preprocess_data(file_path):
     try:
