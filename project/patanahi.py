@@ -12,7 +12,7 @@ PLOTS_DIR = os.path.join(SCRIPT_DIR, 'plots')
 
 # Define the path to the dataset
 # IMPORTANT: Update this path to your actual dataset location
-DATASET_PATH = r"C:\Users\admin\Downloads\dataset_project.csv"
+DATASET_PATH = r"E:\Learning\samsung_python\project\dataset_project.csv"
 BACKUP_DATASET_PATH = r"C:\Users\admin\Downloads\dataset_project_backup.csv" # Backup path
 
 # Create the plots directory if it doesn't exist
