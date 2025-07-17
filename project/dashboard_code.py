@@ -216,7 +216,7 @@ def calculate_second_child_normal_after_csection(df):
     return f"Percentage of 2nd child births that were normal after 1st C-section: {percentage:.2f}%"
 
 def main():
-    file_path = r"C:\\Users\\admin\\Downloads\\dataset_project.csv"
+    file_path = r"E:\Learning\samsung_python\project\dataset_project.csv"
     df = load_and_preprocess_data(file_path)
     if df is not None:
         print("\n--- Generating Visualizations and Saving Plots ---")

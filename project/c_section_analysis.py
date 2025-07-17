@@ -244,7 +244,7 @@ def main():
     """
     Main function to run the entire analysis workflow.
     """
-    file_path = r"C:\Users\admin\Downloads\dataset_project.csv"
+    file_path = r"E:\Learning\samsung_python\project\dataset_project.csv"
     df = load_and_preprocess_data(file_path)
 
     if df is not None:
